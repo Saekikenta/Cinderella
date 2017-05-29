@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+
+<title>TRUE END</title>
+
+<style type="text/css">
+
+#bg{
+	border: 1px solid gray;
+	width: 800px;
+	height: 600px;
+}
+#chara1{
+	position: absolute;
+	top: 100px;
+	left: 100px;
+	width: 300px;
+	height: 300px;
+}
+#chara2{
+	position: absolute;
+	top: 100px;
+	left: 500px;
+	width: 300px;
+	height: 300px;
+}
+#serif{
+	position: relative;
+	top: 400px;
+	left: 100px;
+	width: 600px;
+	height: 150px;
+	background-color: rgba(255,255,255,0.75);
+	padding: 10px;
+}
+
+
+
+</style>
+
+</head>
+
+<body>
+<audio src="sound/bgm01.mp3" autoplay></audio>
+	<!--背景-->
+	<div id="bg">
+	<!--キャラ-->
+		<div id="chara1"></div>
+		<div id="chara2"></div>
+	<!--セリフ-->
+		<div id="serif"></div>
+
+</div>
+
+	<script src="js/jquery.min.js"></script>
+
+	<script>
+		//出題中か？
+		var question = false;
+		//正解の番号
+		var correct = 0;
+		//エンディングか？
+		var end = false;
+		//正解時の表示メッセージ
+		var goodReaction = "";
+		//間違えたときの表示メッセージ
+		var badReaction = "";
+
+		var SCENARIO = [
+				{com:"BG", val:"url(image/bg/siro.png)"}
+			, {com:"CH1", val:"url(image/Human/cinderella.png)"}
+			, {com:"CH2", val:"url(image/Human/mahoutsukai_woman.png)"}
+			, {com:"S",  val:"「１２時を過ぎれば馬車の魔法が解けて元の姿に戻ってしまうから、必ず１２時までには戻ってきなさい」"}
+			, {com:"S",  val:"「わかりました。かならず１２時に戻ってきます。」シンデレラはそう約束して、大喜びで舞踏会へ出かけました。"}
+			, {com:"BG", val:"url(image/bg/odori.png)"}
+			, {com:"CH2", val:""}
+			, {com:"S",  val:"さて、舞踏会に着いた美しいシンデレラは、たちまちみんなの注目の的となり、王子様もシンデレラの美しさに気づき、シンデレラを踊りに誘いました。"}
+			, {com:"S",  val:"「まあ大変、１２時だわ。もう帰らなくては」"}
+			, {com:"S",  val:"まだシンデレラがどこの誰だか聞いていなかった王子様は引き留めようとしましたが、シンデレラはあっという間に消えてしまいました。"}
+			, {com:"BG", val:"url(image/bg/kaidan_kutsu.png)"}
+			, {com:"CH1", val:""}
+			, {com:"S",  val:"階段にはシンデレラが履いていた美しいガラスの靴が片方だけ残されていました。"}
+			, {com:"S",  val:"手がかりのガラスの靴を頼りにお使いは、この方こそ王子様の探しておられた女性だ、と言って、シンデレラをお城へ連れていき、シンデレラは王子さまと結婚して、いつまでも幸せに暮らしました。"}
+			, {com:"BG", val:"url(image/bg/EndBG.png)"}
+			, {com:"E",  val:"HAPPY END"}
+			];
+	var Novel = {
+		cursor: 0
+	, max: 0
+	, init: function(){
+		this.max = SCENARIO.length;
+		this.play();
+	}
+	, play: function(){
+		if( this.cursor >= this.max ){
+			return(false);
+		}
+		switch(SCENARIO[this.cursor].com){
+			// セリフ再生
+			case "S":
+				$("#serif").html(SCENARIO[this.cursor].val);
+				this.cursor++;
+				break;
+			// キャラクター変更
+				case "CH1":
+					$("#chara1").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+			// キャラクター変更
+				case "CH2":
+					$("#chara2").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+			// 背景変更
+				case "BG":
+					$("#bg").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+
+			//エンディングへ遷移
+				case "E":
+					$("#serif").html(SCENARIO[this.cursor].val);
+					end = true;
+					ending = document.getElementById("playerStatus").value;
+					this.cursor++;
+					break;
+
+			default:
+				break;
+		}
+	}
+	};
+	$(document).ready(function(){
+	Novel.init();
+
+	$("#serif")
+		.on("click", function(){
+			//エンディングなら
+			if(end){
+					document.location.href = "index.html";
+			}
+
+			if(!question){
+			Novel.play();
+		}
+		});
+	});
+	</script>
+
+</body>
+
+</html>

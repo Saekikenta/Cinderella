@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+
+<title>NobelTitle</title>
+
+<style type="text/css">
+
+#bg{
+	border: 1px solid gray;
+	width: 800px;
+	height: 600px;
+}
+#chara1{
+	position: absolute;
+	top: 100px;
+	left: 100px;
+	width: 300px;
+	height: 300px;
+}
+#chara2{
+	position: absolute;
+	top: 100px;
+	left: 500px;
+	width: 300px;
+	height: 300px;
+}
+#serif{
+	position: relative;
+	top: 400px;
+	left: 100px;
+	width: 600px;
+	height: 150px;
+	background-color: rgba(255,255,255,0.75);
+	padding: 10px;
+}
+
+#Buttons1{
+	position: relative;
+	left: 300px;
+	padding: 10px;
+}
+
+</style>
+
+</head>
+
+<body>
+<audio src="sound/bgm01.mp3" autoplay loop></audio>
+
+<audio id="se" src="sound/se01.mp3"></audio>
+<!--プレイヤー正解数保存-->
+	<input id="playerStatus" type="hidden" value=0>
+<!--背景-->
+	<div id="bg">
+<!--キャラ-->
+	<div id="chara1"></div>
+	<div id="chara2"></div>
+<!--セリフ-->
+	<div id="serif"></div>
+<!--問題ボタン-->
+	<form id="Buttons1">
+		<button id="01">Question01</button>
+		<button id="02">Question02</button>
+	</br>
+		<button id="03">Question03</button>
+		<button id="04">Question04</button>
+	</form>
+
+	</div>
+
+	<script src="js/jquery.min.js"></script>
+
+	<script>
+    //問題非表示
+		document.getElementById("Buttons1").style.display = "none";
+    //出題中か？
+    var question = false;
+    //正解の番号
+    var correct = 0;
+    //エンディングか？
+    var end = false;
+    //正解時の表示メッセージ
+    var goodReaction = "";
+    //間違えたときの表示メッセージ
+    var badReaction = "";
+
+		var SCENARIO = [
+	  		{com:"BG", val:"url(image/bg/zatuyou.png)"}
+			, {com:"S",  val:"昔々、あるところにシンデレラと呼ばれている美しく心の優しい娘がいました。"}
+			, {com:"S",  val:"シンデレラのお母さんはなくなり、お父さんは新しいお母さんと結婚しましたが、２番目のお母さんと二人の義理のお姉さまから妬まれていました。"}
+			, {com:"S",  val:"ある時、この国の王子様が舞踏会を開く事になり、二人の義理のお姉さまはドレスを着てお城へ出かけていきました。"}
+			, {com:"S",  val:"シンデレラも行きたかったのですが、もちろん連れて行ってもらえず、一人になり悲しくなったシンデレラは泣き出してしまいました。"}
+			, {com:"S",  val:"シンデレラ「わたしも舞踏会に行きたいわ」"}
+			, {com:"BG", val:"url(image/bg/mahou.png)"}
+			, {com:"S",  val:"すると、シンデレラの目の前に魔法使いが現れ、"}
+			, {com:"S",  val:"魔法使い「泣かないで、シンデレラ、私が舞踏会へ連れて行ってあげるわ」"}
+			, {com:"S",  val:"魔法使い「ただし私のクイズに答えられたらね。まずは畑からかぼちゃも取ってきなさい」"}
+			, {com:"S",  val:"シンデレラは畑からかぼちゃを取ってきて、魔法使いに渡すとある問題を出してきました。"}
+			, {com:"Q",  val:"問題　かぼちゃを漢字で書くと？"
+      ,que1:"A:東瓜", que2:"B:西瓜",que3:"C:南瓜",que4:"D:北瓜"
+      , correct:3, goodmessage:"魔法使い「正解よ！」と言い、魔法使いはその南瓜を叩くと、カボチャがどんどん大きくなり、何と黄金の馬車になったではありませんか。"
+			, badmessage:"魔法使い「残念、正解はC 南瓜よ」と言い、魔法使いはその南瓜を叩くと、カボチャがどんどん大きくなり、小汚い馬車へと変えていったではありませんか。"}
+			, {com:"S",  val:"魔法使い「まだまだ、これからよ。馬車を引くには、馬が必要よ。そこに、ハツカネズミが六匹いるわね」"}
+			, {com:"S",  val:"魔法使いはハツカネズミをつかまえ、シンデレラにまた問題を出してきました。"}
+      , {com:"Q",  val:"問題：ネズミに関する言葉の中で存在しない言葉はどれ？",
+      que1:"A:鼠の山", que2:"B:濡れ鼠",que3:"C:袋の鼠",que4:"D:鼠に引かれそう"
+      , correct: 1, goodmessage:"魔法使い「正解よ！」と言い、魔法のつえでハツカネズミにさわると、ネズミはみるみるうちに、立派な白馬になりました。"
+			,badmessage:"魔法使い「残念、正解はA 鼠の山よ」と言い、魔法のつえでハツカネズミにさわると、ネズミはみるみるうちに、立派なポニーになってしまいました。"}
+      , {com:"S",  val:"魔法使い「シンデレラ、あなたの靴を私に渡しなさい。これが最後の問題よ。」と言うと、シンデレラは素直に魔法使いに靴を渡し、問題を出してきました。"}
+      , {com:"Q",  val:"問題：存在するシューズブランドは？",
+      que1:"A:コック", que2:"B:シェフ"
+      ,que3:"Cウェイター",que4:"D: ITAMAE"
+      , correct: 1, goodmessage:"魔法使い「正解よ！」すると魔法使いは、シンデレラに小さくて素敵なガラスのクツに変えました。"
+			, badmessage:"魔法使い「残念、正解はA コックよ」すると魔法使いは、シンデレラに小さくて汚れたスニーカーに変えました。"}
+      , {com:"E",  val:"魔法使い「さあ、シンデレラ舞踏会にいってらっしゃい！！」"}
+			];
+	var Novel = {
+	  cursor: 0
+	, max: 0
+	, init: function(){
+		this.max = SCENARIO.length;
+		this.play();
+	}
+	, play: function(){
+		if( this.cursor >= this.max ){
+			return(false);
+		}
+		switch(SCENARIO[this.cursor].com){
+			// セリフ再生
+			case "S":
+				$("#serif").html(SCENARIO[this.cursor].val);
+				this.cursor++;
+				break;
+			// キャラクター変更
+				case "CH1":
+					$("#chara1").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+			// キャラクター変更
+				case "CH2":
+					$("#chara2").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+			// 背景変更
+				case "BG":
+					$("#bg").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+
+			// クイズ
+				case "Q":
+				$("#serif").html(SCENARIO[this.cursor].val);
+        $("#01").html(SCENARIO[this.cursor].que1);
+        $("#02").html(SCENARIO[this.cursor].que2);
+        $("#03").html(SCENARIO[this.cursor].que3);
+        $("#04").html(SCENARIO[this.cursor].que4);
+        correct = SCENARIO[this.cursor].correct;
+        goodReaction = SCENARIO[this.cursor].goodmessage;
+        badReaction = SCENARIO[this.cursor].badmessage;
+        question = true;
+				document.getElementById("Buttons1").style.display = "block";
+				this.cursor++;
+				break;
+      //エンディングへ遷移
+        case "E":
+          $("#serif").html(SCENARIO[this.cursor].val);
+          end = true;
+          ending = document.getElementById("playerStatus").value;
+          this.cursor++;
+          break;
+
+			default:
+				break;
+		}
+	}
+};
+$(document).ready(function(){
+	Novel.init();
+
+	//01ボタンが押されたら
+	$("#01").on("click",function(){
+    if(correct == 1){
+        Correct();
+    }
+    else {
+      $("#serif").html(badReaction);
+    }
+    QuestionEnd();
+		return (false);
+	});
+	//02ボタンが押されたら
+	$("#02").on("click",function(){
+    if(correct == 2){
+        Correct();
+    }
+    else {
+      $("#serif").html(badReaction);
+    }
+    QuestionEnd();
+		return (false);
+	});
+	//03ボタンが押されたら
+	$("#03").on("click",function(){
+    if(correct == 3){
+      Correct();
+    }
+    else {
+      $("#serif").html(badReaction);
+    }
+    QuestionEnd();
+		return (false);
+	});
+	//04ボタンが押されたら
+	$("#04").on("click",function(){
+    if(correct == 4){
+      Correct();
+    }
+    else {
+      $("#serif").html(badReaction);
+    }
+    QuestionEnd();
+		return (false);
+	});
+
+  function QuestionEnd(){
+    question = false;
+    document.getElementById("Buttons1").style.display = "none";
+		this.cursor++;
+  }
+
+//正解時の処理
+function Correct(){
+  var num = document.getElementById("playerStatus").value;
+  num++;
+  document.getElementById("playerStatus").value = num;
+  $("#serif").html(goodReaction);
+}
+
+	$("#serif")
+		.on("click", function(){
+      //エンディングなら
+      if(end){
+        var num = document.getElementById("playerStatus").value;
+        if(num <= 0){
+          //バッドエンド
+          document.location.href = "badEnd.html";
+        }
+        if(num == 1){
+          //ノーマルエンド
+          document.location.href = "normalEnd.html";
+        }
+        if(num > 1){
+          //トゥルーエンド
+          document.location.href = "trueEnd.html";
+        }
+      }
+
+			if(!question){
+			Novel.play();
+		}
+		});
+});
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+
+<title>BAD END</title>
+
+<style type="text/css">
+
+#bg{
+	border: 1px solid gray;
+	width: 800px;
+	height: 600px;
+}
+#chara1{
+	position: absolute;
+	top: 100px;
+	left: 100px;
+	width: 240px;
+	height: 300px;
+}
+#chara2{
+	position: absolute;
+	top: 100px;
+	left: 500px;
+	width: 240px;
+	height: 300px;
+}
+#serif{
+	position: relative;
+	top: 400px;
+	left: 100px;
+	width: 600px;
+	height: 150px;
+	background-color: rgba(255,255,255,0.75);
+	padding: 10px;
+}
+
+
+</style>
+
+</head>
+
+<body>
+<audio src="sound/bgm01.mp3" autoplay></audio>
+	<!--背景-->
+		<div id="bg">
+	<!--キャラ-->
+		<div id="chara1"></div>
+		<div id="chara2"></div>
+	<!--セリフ-->
+		<div id="serif"></div>
+
+</div>
+
+	<script src="js/jquery.min.js"></script>
+
+	<script>
+    //出題中か？
+    var question = false;
+    //正解の番号
+    var correct = 0;
+    //エンディングか？
+    var end = false;
+    //正解時の表示メッセージ
+    var goodReaction = "";
+    //間違えたときの表示メッセージ
+    var badReaction = "";
+
+		var SCENARIO = [
+	  		{com:"BG", val:"url(image/bg/siro.png)"}
+			, {com:"CH1", val:"url(image/Human/cinderella.png)"}
+			, {com:"S",  val:"シンデレラは急いで舞踏会の会場へ向かっていきました。"}
+			, {com:"S",  val:"舞踏会の会場には来たものの、小汚い馬車、ポニー、スニーカーと参加できる身なりではないと門前払いをくらい、シンデレラは一人寂しく家に帰ってしまいましたとさ。"}
+	  	,	{com:"BG", val:"url(image/bg/end3.png)"}
+			, {com:"CH1", val:""}
+			, {com:"E",  val:"BAD END"}
+			];
+	var Novel = {
+	  cursor: 0
+	, max: 0
+	, init: function(){
+		this.max = SCENARIO.length;
+		this.play();
+	}
+	, play: function(){
+		if( this.cursor >= this.max ){
+			return(false);
+		}
+		switch(SCENARIO[this.cursor].com){
+			// セリフ再生
+			case "S":
+				$("#serif").html(SCENARIO[this.cursor].val);
+				this.cursor++;
+				break;
+			// キャラクター変更
+				case "CH1":
+					$("#chara1").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+			// キャラクター変更
+				case "CH2":
+					$("#chara2").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+			// 背景変更
+				case "BG":
+					$("#bg").css("background-image", SCENARIO[this.cursor].val);
+					this.cursor++;
+					Novel.play();
+					break;
+
+      //エンディングへ遷移
+        case "E":
+          $("#serif").html(SCENARIO[this.cursor].val);
+          end = true;
+          ending = document.getElementById("playerStatus").value;
+          this.cursor++;
+          break;
+
+			default:
+				break;
+		}
+	}
+};
+$(document).ready(function(){
+	Novel.init();
+
+	$("#serif")
+		.on("click", function(){
+      //エンディングなら
+      if(end){
+          document.location.href = "index.html";
+      }
+
+			if(!question){
+			Novel.play();
+		}
+		});
+});
+</script>
+
+</body>
+
+</html>
